@@ -37,13 +37,13 @@ if __name__ == "__main__":
 
     data = loadmat('/rwthfs/rz/cluster/home/vv465559/cui/testdata/2014-03-21_MEA_0046_80300894.mat')  # print(type(data))
     current = data['BATT_CURRENT'][1:86378:100]
-	voltage = data['BATT_V_TOTAL'][1:86378:100]
-	speed = data['VEH_SPEED'][1:43189:50]
-	power = [] 
-	for i in range(len(current)):
-		power.append([i+1, current[i]*voltage[i]])
+    voltage = data['BATT_V_TOTAL'][1:86378:100]
+    speed = data['VEH_SPEED'][1:43189:50]
+    power = [] 
+    for i in range(len(current)):
+        power.append([i+1, current[i]*voltage[i]])
     #data_pd = pd.DataFrame(power).to_numpy()
-	data_pd = power
+    data_pd = power
     final_data = []
     for i in range(17):
         for n in range(len(data_pd)):
