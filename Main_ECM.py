@@ -18,9 +18,9 @@ class Env_battery:
         #self.HP_current = self.Current_total[0][1] - self.HE_current
         #self.HE_current_vector = HE_current_vector
         #self.HP_current_vector = HP_current_vector
-		self.Power_total = Power_total
-		self.HE_power_vector = HE_power_vector
-		self.HP_power_vector = HP_power_vector
+        self.Power_total = Power_total
+        self.HE_power_vector = HE_power_vector
+        self.HP_power_vector = HP_power_vector
         self.HE_battery = ECM_HE([0,0])            #using seperate HE and HP battery model
         #print("initialHE", self.HE_current_vector)
         self.HP_battery = ECM_HP([0,0])
@@ -31,7 +31,7 @@ class Env_battery:
         self.HP_cell_series = 150 #122
         self.HP_cell_parallel = 1 #17
         self.HP_cell_num = self.HP_cell_series * self.HP_cell_parallel 
-		self.Speed_vector = Speed_vector
+        self.Speed_vector = Speed_vector
 		
 		
     def reset(self):
@@ -43,18 +43,18 @@ class Env_battery:
 
 
     def step(self, action, num):
-		#power distribution
-		self.HP_power = self.Power_total[num][1] * action * 0.1
-		self.HE_power = self.Power_total[num][1] - self.HP_power
-		# former currrent distribution 
+        #power distribution
+        self.HP_power = self.Power_total[num][1] * action * 0.1
+        self.HE_power = self.Power_total[num][1] - self.HP_power
+        # former currrent distribution 
         #self.HE_current = self.Current_total[num][1] * action * 0.1
         #self.HP_current = self.Current_total[num][1] - self.HE_current
         #HE_cur = self.HE_current / self.HE_cell_parallel
         #HP_cur = self.HP_current / self.HP_cell_parallel
-		HP_pow = self.HP_power / self.HP_cell_num
-		HE_pow = self.HE_power / self.HE_cell_num
-		HP_cur =-((ECM_HP.OCV[-1][1]+ECM_HP.V1[-1][1]+ECM_HP.V2[-1][1]) + math.sqrt((ECM_HP.OCV[-1][1]+ECM_HP.V1[-1][1]+ECM_HP.V2[-1][1])**2 + 4*ECM_HP.R0*HP_pow))/(2*ECM_HP.R0)
-		HE_cur =-((ECM_HE.OCV[-1][1]+ECM_HE.V1[-1][1]+ECM_HE.V2[-1][1]) + math.sqrt((ECM_HE.OCV[-1][1]+ECM_HE.V1[-1][1]+ECM_HE.V2[-1][1])**2 + 4*ECM_HE.R0*HE_pow))/(2*ECM_HE.R0)
+        HP_pow = self.HP_power / self.HP_cell_num
+        HE_pow = self.HE_power / self.HE_cell_num
+        HP_cur =-((ECM_HP.OCV[-1][1]+ECM_HP.V1[-1][1]+ECM_HP.V2[-1][1]) + math.sqrt((ECM_HP.OCV[-1][1]+ECM_HP.V1[-1][1]+ECM_HP.V2[-1][1])**2 + 4*ECM_HP.R0*HP_pow))/(2*ECM_HP.R0)
+        HE_cur =-((ECM_HE.OCV[-1][1]+ECM_HE.V1[-1][1]+ECM_HE.V2[-1][1]) + math.sqrt((ECM_HE.OCV[-1][1]+ECM_HE.V1[-1][1]+ECM_HE.V2[-1][1])**2 + 4*ECM_HE.R0*HE_pow))/(2*ECM_HE.R0)
         self.HE_current_vector.append([num , HE_cur])
         self.HP_current_vector.append([num , HP_cur])
         self.HE_battery = ECM_HE(self.HE_current_vector)
