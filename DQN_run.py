@@ -37,7 +37,13 @@ if __name__ == "__main__":
 
     data = loadmat('/rwthfs/rz/cluster/home/vv465559/cui/testdata/2014-03-21_MEA_0046_80300894.mat')  # print(type(data))
     current = data['BATT_CURRENT'][1:86378:100]
-    data_pd = pd.DataFrame(current).to_numpy()
+	voltage = data['BATT_V_TOTAL'][1:86378:100]
+	speed = data['VEH_SPEED'][1:43189:50]
+	power = [] 
+	for i in range(len(current)):
+		power.append([i+1, current[i]*voltage[i]])
+    #data_pd = pd.DataFrame(power).to_numpy()
+	data_pd = power
     final_data = []
     for i in range(17):
         for n in range(len(data_pd)):
@@ -45,20 +51,20 @@ if __name__ == "__main__":
     Env_battery_update = Env_battery([[0, 0]], [[0, 0]], [[0, 0]])
     RL = DeepQNetwork(Env_battery_update.n_actions, Env_battery_update.n_states, learning_rate=0.01, reward_decay=0.9, e_greedy=0.9, replace_target_iter=200, memory_size=2000)
     for episode in range(100):
-        HE_current_vector = [[0, 0]]
-        HP_current_vector = [[0, 0]]
+        HE_power_vector = [[0, 0]]
+        HP_power_vector = [[0, 0]]
         #observation = Env_battery([[0, 0]]).reset()
         for time in range(len(final_data)):
             if time == 0:
                 observation = Env_battery([[0, 0]], [[0, 0]], [[0, 0]]).reset()
             else:
                 print(time)
-                Env_battery_update = Env_battery(final_data[0:time+1], HE_current_vector , HP_current_vector)
+                Env_battery_update = Env_battery(final_data[0:time+1], HE_power_vector , HP_power_vector, speed[0:time + 1])
                 #RL = DeepQNetwork(Env_battery_update.n_actions, Env_battery_update.n_states, learning_rate=0.01, reward_decay=0.9, e_greedy=0.9, replace_target_iter=200, memory_size=2000)
                 action = RL.choose_action(observation)
 
                 # RL take action and get next observation and reward
-                observation_, reward, HE_current_vector, HP_current_vector = Env_battery_update.step(action, time)  #####time stamp of action
+                observation_, reward, HE_power_vector, HP_power_vector = Env_battery_update.step(action, time)  #####time stamp of action
                 print("reward",reward)
 
                 RL.store_transition(observation, action, reward, observation_)
