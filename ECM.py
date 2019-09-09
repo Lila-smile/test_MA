@@ -120,9 +120,16 @@ class Battery_ECM:
         return dV2dt
 
     def cur_dert(self, num):
-        cur = (-(self.OCV[-1][1] + self.V1[-1][1] + self.V2[-1][1]) + math.sqrt((self.OCV[-1][1] + self.V1[-1][1] + self.V2[-1][1]) ** 2 + 4 * self.R0 * self.P[-1][1])) / (2 * self.R0)
+        a = self.R0
+        b = self.OCV[-1][1] + self.V1[-1][1] + self.V2[-1][1]
+        c = -self.P[-1][1]
+        #print(pow(b,2) - 4 * a * c)
+        cur =(-b + np.sqrt(pow(b, 2) - 4*a*c)) / (2*a)
+
+
+        #cur_inter = math.sqrt((self.OCV[-1][1] + self.V1[-1][1] + self.V2[-1][1]) ** 2 + 4 * self.R0 * self.P[-1][1])
+        #cur = (-(self.OCV[-1][1] + self.V1[-1][1] + self.V2[-1][1]) + math.sqrt((self.OCV[-1][1] + self.V1[-1][1] + self.V2[-1][1]) ** 2 + 4 * self.R0 * self.P[-1][1])) / (2 * self.R0)
         self.I.append([num, cur])
-        #print("current",self.I)
         return self.I
 
     def twoRCECM(self, num, current):
