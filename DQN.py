@@ -95,6 +95,7 @@ class DeepQNetwork:
             self.memory_counter = 0
         transition = np.hstack((s, [a, r], s_))
         # replace the old memory with new memory
+        #print(transition)
         index = self.memory_counter % self.memory_size
         self.memory[index, :] = transition
         self.memory_counter += 1
@@ -105,12 +106,12 @@ class DeepQNetwork:
         observation = observation[np.newaxis, :]
         #observation = observation
         if np.random.uniform() < self.epsilon:
-            print("1st loop")
+            #print("1st loop")
             # forward feed the observation and get q value for every actions
             actions_value = self.sess.run(self.q_eval, feed_dict={self.s: observation})
             action = np.argmax(actions_value)
         else:
-            print("2nd loop")
+            #print("2nd loop")
             action = np.random.randint(0, self.n_actions)
         return action
 
@@ -150,4 +151,4 @@ class DeepQNetwork:
         plt.show()
 
 if __name__ == '__main__':
-    DQN = DeepQNetwork(11, 2, output_graph=True)
+    DQN = DeepQNetwork(11, 4, output_graph=True)

@@ -1,13 +1,14 @@
 import numpy as np
 from scipy.integrate import odeint, quad
 from scipy.misc import derivative
-
+#import math
 
 class Battery_ECM:
-    def __init__(self, i, temp_cell=[0, 300], soc_ini=1, v10=0, v20=0, tamb=298,
-                 time_diff=1):  # V10, V20 initial value of V1, V2
+    def __init__(self, i, temp_cell = [0,300], soc_ini = 1, v10 = 0, v20 = 0, tamb = 298, time_diff = 1) : #V10, V20 initial value of V1, V2
         self.I = []
-        self.I = i
+        # self.I = i
+        self.P = []
+        self.P = i
         # print(self.I)
         self.T = []
         self.T.append(temp_cell)
@@ -121,7 +122,20 @@ class Battery_ECM:
         dV2dt = (-1 / (self.R2 * self.C2)) * V2 + 1 / self.C2 * a
         return dV2dt
 
-    def twoRCECM(self, num):
+    def cur_dert(self, num):
+        a = self.R0
+        b = self.OCV[-1][1] + self.V1[-1][1] + self.V2[-1][1]
+        c = -self.P[-1][1]
+        #print(pow(b,2) - 4 * a * c)
+        cur =(-b + np.sqrt(pow(b, 2) - 4*a*c)) / (2*a)
+
+
+        #cur_inter = math.sqrt((self.OCV[-1][1] + self.V1[-1][1] + self.V2[-1][1]) ** 2 + 4 * self.R0 * self.P[-1][1])
+        #cur = (-(self.OCV[-1][1] + self.V1[-1][1] + self.V2[-1][1]) + math.sqrt((self.OCV[-1][1] + self.V1[-1][1] + self.V2[-1][1]) ** 2 + 4 * self.R0 * self.P[-1][1])) / (2 * self.R0)
+        self.I.append([num, cur])
+        return self.I
+
+    def twoRCECM(self, num,current):
         # self.SOC = self.SOC_upd(num)
         self.OCV.append([num, self.ocv_upd(num)])
         self.R0 = self.r0_udp()
@@ -138,12 +152,12 @@ class Battery_ECM:
         #     self.V1.append([num, quad(self.dV1_cal, self.V1[num-1][1], self.time_diff, args = (a,))[0]])
         #     self.V2.append([num, quad(self.dV2_cal, self.V2[num-1][1], self.time_diff, args = (a,))[0]])
         # self.Vt.append([num, self.OCV[num][1] - self.V1[num][1] - self.V2[num][1] - self.R0*self.I[num][1]])
-        self.Xk.append([num + 1, np.dot(self.Ad, self.Xk[num][1]) + np.dot(self.Bd, self.I[num][1])])
+        self.Xk.append([num + 1, np.dot(self.Ad, self.Xk[num][1]) + np.dot(self.Bd, current[num][1])])
 
         # print(self.Xk)
         self.SOC.append([num + 1, self.Xk[num + 1][1][0][0]])
         self.V1.append([num + 1, self.Xk[num + 1][1][1][0]])
         self.V2.append([num + 1, self.Xk[num + 1][1][2][0]])
         self.Vt.append(
-            [num, self.OCV[num + 1][1] + self.V1[num + 1][1] + self.V2[num + 1][1] + self.R0 * self.I[num][1]])
+            [num, self.OCV[num + 1][1] + self.V1[num + 1][1] + self.V2[num + 1][1] + self.R0 * current[num][1]])
         return self.Vt, self.SOC, self.V1[-1][1], self.V2[-1][1]

@@ -35,20 +35,22 @@ import numpy as np
 if __name__ == "__main__":
     # set environment
 
-    data = loadmat('/rwthfs/rz/cluster/home/vv465559/cui/testdata/2014-03-21_MEA_0046_80300894.mat')  # print(type(data))
+    data = loadmat('/home/cuihan/PycharmProjects/masterthesisproject/testdata/2014-03-21_MEA_0046_80300894.mat')  # print(type(data))
     current = data['BATT_CURRENT'][1:86378:100]
     voltage = data['BATT_V_TOTAL'][1:86378:100]
-    speed = data['VEH_SPEED'][1:43189:50]
+    speed_init = data['VEH_SPEED'][1:43189:50]
     power = [] 
     for i in range(len(current)):
-        power.append([i+1, current[i]*voltage[i]])
+        power.append([i+1, -current[i]*voltage[i]])
     #data_pd = pd.DataFrame(power).to_numpy()
     data_pd = power
     final_data = []
+    speed = []
     for i in range(17):
         for n in range(len(data_pd)):
-            final_data.append([n+i*len(data_pd), data_pd[n, 0]])  # n start with 0, 17 same trips
-    Env_battery_update = Env_battery([[0, 0]], [[0, 0]], [[0, 0]])
+            final_data.append([n+i*len(data_pd), data_pd[n][1]])  # n start with 0, 17 same trips
+            speed.append(speed_init[n])
+    Env_battery_update = Env_battery([[0, 0]], [[0, 0]], [[0, 0]],[[0, 0]])
     RL = DeepQNetwork(Env_battery_update.n_actions, Env_battery_update.n_states, learning_rate=0.01, reward_decay=0.9, e_greedy=0.9, replace_target_iter=200, memory_size=2000)
     for episode in range(100):
         HE_power_vector = [[0, 0]]
@@ -56,7 +58,7 @@ if __name__ == "__main__":
         #observation = Env_battery([[0, 0]]).reset()
         for time in range(len(final_data)):
             if time == 0:
-                observation = Env_battery([[0, 0]], [[0, 0]], [[0, 0]]).reset()
+                observation = Env_battery([[0, 0]], [[0, 0]], [[0, 0]],[[0, 0]]).reset()
             else:
                 print(time)
                 Env_battery_update = Env_battery(final_data[0:time+1], HE_power_vector , HP_power_vector, speed[0:time + 1])
