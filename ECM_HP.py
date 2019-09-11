@@ -4,7 +4,7 @@ from scipy.misc import derivative
 #import math
 
 class Battery_ECM:
-    def __init__(self, i, temp_cell = [0,300], soc_ini = 1, v10 = 0, v20 = 0, tamb = 298, time_diff = 1) : #V10, V20 initial value of V1, V2
+    def __init__(self, i, temp_cell = [0,300], soc_ini = 0.5, v10 = 0, v20 = 0, tamb = 298, time_diff = 1) : #V10, V20 initial value of V1, V2
         self.I = []
         # self.I = i
         self.P = []

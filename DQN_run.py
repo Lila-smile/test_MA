@@ -79,3 +79,4 @@ if __name__ == "__main__":
                 # break while loop when end of this episode
     # Env_battery.mainloop()
     RL.plot_cost()
+	RL.save

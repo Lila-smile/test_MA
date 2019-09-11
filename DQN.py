@@ -149,6 +149,11 @@ class DeepQNetwork:
         plt.ylabel('Cost')
         plt.xlabel('training steps')
         plt.show()
-
+		plt.savefig('/home/cuihan/PycharmProjects/masterthesisproject/testdata/cost.png')
+	
+	def save(self):
+		saver = tf.train.Saver()
+		save_path = saver.save(self.sess, '/home/cuihan/PycharmProjects/masterthesisproject/testdata/trained_model.ckpt')
+		
 if __name__ == '__main__':
     DQN = DeepQNetwork(11, 4, output_graph=True)
