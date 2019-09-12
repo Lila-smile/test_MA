@@ -35,24 +35,31 @@ import numpy as np
 if __name__ == "__main__":
     # set environment
 
-    data = loadmat('/home/cuihan/PycharmProjects/masterthesisproject/testdata/2014-03-21_MEA_0046_80300894.mat')  # print(type(data))
-    current = data['BATT_CURRENT'][1:86378:100]
-    voltage = data['BATT_V_TOTAL'][1:86378:100]
-    speed_init = data['VEH_SPEED'][1:43189:50]
-    power = [] 
-    for i in range(len(current)):
-        power.append([i+1, -current[i]*voltage[i]])
-    #data_pd = pd.DataFrame(power).to_numpy()
+    #data = loadmat('/home/cuihan/PycharmProjects/masterthesisproject/testdata/2014-03-21_MEA_0046_80300894.mat')  # print(type(data))
+    #current = data['BATT_CURRENT'][1:86378:100]
+    #voltage = data['BATT_V_TOTAL'][1:86378:100]
+    #speed_init = data['VEH_SPEED'][1:43189:50]
+    # power = []
+    data = loadmat('/home/cuihan/PycharmProjects/masterthesisproject/testdata/driving_cycle/wltp2.mat')
+    power_init = data['P_DCL_Fahrzeug']['P_custom_wltp_1s']
+    speed_init = data['P_DCL_Fahrzeug']['v_custom_wltp_1s']
+    power = []
+    for i in range(len(power_init)):
+        #power.append([i+1, -current[i]*voltage[i]])
+        power.append([i, power_init[i][0]])
+
+    #######data_pd = pd.DataFrame(power).to_numpy()
     data_pd = power
     final_data = []
     speed = []
-    for i in range(17):
+    for i in range(2):
         for n in range(len(data_pd)):
             final_data.append([n+i*len(data_pd), data_pd[n][1]])  # n start with 0, 17 same trips
-            speed.append(speed_init[n])
+            #speed.append(speed_init[n])
+            speed.append(speed_init[n][0])
     Env_battery_update = Env_battery([[0, 0]], [[0, 0]], [[0, 0]],[[0, 0]])
     RL = DeepQNetwork(Env_battery_update.n_actions, Env_battery_update.n_states, learning_rate=0.01, reward_decay=0.9, e_greedy=0.9, replace_target_iter=200, memory_size=2000)
-    for episode in range(100):
+    for episode in range(50):
         HE_power_vector = [[0, 0]]
         HP_power_vector = [[0, 0]]
         #observation = Env_battery([[0, 0]]).reset()
@@ -67,7 +74,7 @@ if __name__ == "__main__":
 
                 # RL take action and get next observation and reward
                 observation_, reward, HE_power_vector, HP_power_vector = Env_battery_update.step(action, time)  #####time stamp of action
-                print("reward",reward)
+                print("reward", reward)
 
                 RL.store_transition(observation, action, reward, observation_)
 
@@ -79,4 +86,6 @@ if __name__ == "__main__":
                 # break while loop when end of this episode
     # Env_battery.mainloop()
     RL.plot_cost()
-	RL.save
+    RL.save()
+
+

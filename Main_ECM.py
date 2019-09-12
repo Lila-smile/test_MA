@@ -67,12 +67,14 @@ class Env_battery:
             HP_current = self.HP_battery.cur_dert(n)
             HE_terminal_volt, HE_soc, HE_v1, HE_v2 = self.HE_battery.twoRCECM(n,HE_current)
             HP_terminal_volt, HP_soc, HP_v1, HP_v2 = self.HP_battery.twoRCECM(n,HP_current)
-        next_state = np.array([HE_soc[-1][1], HP_soc[-1][1], self.Speed_vector[num], self.Power_total[num][1]])
+        Speed_norm = self.Speed_vector[num]/300
+        Power_norm =self.Power_total[num][1]/45000
+        next_state = np.array([HE_soc[-1][1], HP_soc[-1][1], Speed_norm, Power_norm])
         #next_state = np.array([HE_soc[-1][1], HP_soc[-1][1]])
         print(next_state)
 
 
-        if next_state[0] <= 0.1 or next_state[1] <= 0.1:  # HE battery soc = 0 or HP battery soc = 0
+        if next_state[0] <= 0.1 or next_state[0] >= 0.9 or next_state[1] <= 0.1 or next_state[1] >= 0.9:  # HE battery soc = 0 or HP battery soc = 0
             reward_function = -1000
 
         else:
