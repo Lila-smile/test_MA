@@ -52,9 +52,9 @@ if __name__ == "__main__":
     data_pd = power
     final_data = []
     speed = []
-	cost = []
-	reward_total = 0
-	reward_final = [] #each indicate total reward in one epoch
+    cost = []
+    reward_total = 0
+    reward_final = [] #each indicate total reward in one epoch
     for i in range(2):
         for n in range(len(data_pd)):
             final_data.append([n+i*len(data_pd), data_pd[n][1]])  # n start with 0, 17 same trips
@@ -80,7 +80,7 @@ if __name__ == "__main__":
                 print("reward", reward)
                 reward_total = reward_total + reward
                 
-				RL.store_transition(observation, action, reward, observation_)
+                RL.store_transition(observation, action, reward, observation_)
                 
                 RL.learn()
                 
@@ -90,7 +90,7 @@ if __name__ == "__main__":
                 # break while loop when end of this episode
     # Env_battery.mainloop()
         #RL.plot_cost() 
-		cost.append(RL.cost())
+        cost.append(RL.cost())
         reward_final.append(reward_total)
 		
     plt.plot(np.arange(len(cost)),cost)

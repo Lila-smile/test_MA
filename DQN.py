@@ -52,8 +52,8 @@ class DeepQNetwork:
         self.sess.run(tf.global_variables_initializer())
         self.cost_his = []
         # total cost and reward:
-		self.cost_total = 0
-		self.reward_total = 0
+        self.cost_total = 0
+        self.reward_total = 0
 
     def _build_net(self):
         # ------------------ all inputs ------------------------
@@ -159,10 +159,9 @@ class DeepQNetwork:
 #        plt.savefig('/rwthfs/rz/cluster/home/vv465559/cui/cost.png')
 	
     def cost(self):
-	    for i in range(len(self.cost_his))
-		    self.cost_total = self.cost_total + self.cost_his[i]
-			
-	    return self.cost_total
+        for i in range(len(self.cost_his)):
+            self.cost_total = self.cost_total + self.cost_his[i]
+        return self.cost_total
 	
     def save(self):
         saver = tf.train.Saver()
