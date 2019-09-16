@@ -3,7 +3,7 @@ from DQN import DeepQNetwork
 import pandas as pd
 from mat4py import loadmat
 import numpy as np
-
+import matplotlib.pyplot as plt
 # def run_env(observation, time):
 #
 #     #for episode in range(2000):
@@ -52,6 +52,9 @@ if __name__ == "__main__":
     data_pd = power
     final_data = []
     speed = []
+	cost = []
+	reward_total = 0
+	reward_final = [] #each indicate total reward in one epoch
     for i in range(2):
         for n in range(len(data_pd)):
             final_data.append([n+i*len(data_pd), data_pd[n][1]])  # n start with 0, 17 same trips
@@ -75,17 +78,31 @@ if __name__ == "__main__":
                 # RL take action and get next observation and reward
                 observation_, reward, HE_power_vector, HP_power_vector = Env_battery_update.step(action, time)  #####time stamp of action
                 print("reward", reward)
-
-                RL.store_transition(observation, action, reward, observation_)
-
+                reward_total = reward_total + reward
+                
+				RL.store_transition(observation, action, reward, observation_)
+                
                 RL.learn()
-
+                
                 # swap observation
                 observation = observation_
-
+                
                 # break while loop when end of this episode
     # Env_battery.mainloop()
-    RL.plot_cost()
+        #RL.plot_cost() 
+		cost.append(RL.cost())
+        reward_final.append(reward_total)
+		
+    plt.plot(np.arange(len(cost)),cost)
+    plt.ylabel('Cost')
+    plt.xlabel('Epoch ')
+    plt.show()
+    plt.savefig('/rwthfs/rz/cluster/home/vv465559/cui/cost_total.png')
+    plt.plot(np.arange(len(reward_final)),reward_final)
+    plt.ylabel('Reward')
+    plt.xlabel('Epoch ')
+    plt.show()
+    plt.savefig('/rwthfs/rz/cluster/home/vv465559/cui/reward_total.png')
     RL.save()
 
 

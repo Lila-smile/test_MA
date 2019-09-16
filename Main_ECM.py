@@ -26,7 +26,7 @@ class Env_battery:
         self.HP_battery = ECM_HP([0,0])
         #print("initialHP", self.HP_current_vector)
         self.HE_cell_series =119 #92
-        self.HE_cell_parallel = 35 #14
+        self.HE_cell_parallel = 40 #14
         self.HE_cell_num = self.HE_cell_series * self.HE_cell_parallel 
         self.HP_cell_series = 150 #122
         self.HP_cell_parallel = 20 #17
@@ -67,7 +67,7 @@ class Env_battery:
             HP_current = self.HP_battery.cur_dert(n)
             HE_terminal_volt, HE_soc, HE_v1, HE_v2 = self.HE_battery.twoRCECM(n,HE_current)
             HP_terminal_volt, HP_soc, HP_v1, HP_v2 = self.HP_battery.twoRCECM(n,HP_current)
-        Speed_norm = self.Speed_vector[num]/300
+        Speed_norm = self.Speed_vector[num]/300     #nomalize of speed and power 
         Power_norm =self.Power_total[num][1]/45000
         next_state = np.array([HE_soc[-1][1], HP_soc[-1][1], Speed_norm, Power_norm])
         #next_state = np.array([HE_soc[-1][1], HP_soc[-1][1]])
@@ -75,12 +75,12 @@ class Env_battery:
 
 
         if next_state[0] <= 0.1 or next_state[0] >= 0.9 or next_state[1] <= 0.2 or next_state[1] >= 0.8:  # HE battery soc = 0 or HP battery soc = 0
-            reward_function = -1000
+            reward_function = -100
 
         else:
 
-            reward_function = - (HE_current[-1][1]**2 *self.HE_battery.R0 + HE_v1**2/self.HE_battery.R1 + HE_v2**2/self.HE_battery.R2  + HP_current[-1][1]**2 *self.HP_battery.R0+ HP_v1**2/self.HP_battery.R1 + HP_v2**2/self.HP_battery.R2 + 5*(HP_soc[-1][1]-0.5)**2)
-
+            reward_function = - (HE_current[-1][1]**2 *self.HE_battery.R0 + HE_v1**2/self.HE_battery.R1 + HE_v2**2/self.HE_battery.R2  + HP_current[-1][1]**2 *self.HP_battery.R0+ HP_v1**2/self.HP_battery.R1 + HP_v2**2/self.HP_battery.R2 + (HP_soc[-1][1]-0.5)**2)
+            
 
         return next_state, reward_function, self.HE_power_vector, self.HP_power_vector
         #return next_state, reward_function

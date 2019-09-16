@@ -158,6 +158,5 @@ class Battery_ECM:
         self.SOC.append([num + 1, self.Xk[num + 1][1][0][0]])
         self.V1.append([num + 1, self.Xk[num + 1][1][1][0]])
         self.V2.append([num + 1, self.Xk[num + 1][1][2][0]])
-        self.Vt.append(
-            [num, self.OCV[num + 1][1] + self.V1[num + 1][1] + self.V2[num + 1][1] + self.R0 * current[num][1]])
+        self.Vt.append([num, self.OCV[num + 1][1] + self.V1[num + 1][1] + self.V2[num + 1][1] + self.R0 * current[num][1]])
         return self.Vt, self.SOC, self.V1[-1][1], self.V2[-1][1]

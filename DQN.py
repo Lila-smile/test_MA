@@ -36,7 +36,7 @@ class DeepQNetwork:
 
         # consist of [target_net, evaluate_net]
         self._build_net()
-
+		
         t_params = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope='target_net')
         e_params = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope='eval_net')
 
@@ -51,6 +51,9 @@ class DeepQNetwork:
 
         self.sess.run(tf.global_variables_initializer())
         self.cost_his = []
+        # total cost and reward:
+		self.cost_total = 0
+		self.reward_total = 0
 
     def _build_net(self):
         # ------------------ all inputs ------------------------
@@ -142,20 +145,25 @@ class DeepQNetwork:
             })
 
         self.cost_his.append(cost)
-
+		
         # increasing epsilon
         self.epsilon = self.epsilon + self.epsilon_increment if self.epsilon < self.epsilon_max else self.epsilon_max
         self.learn_step_counter += 1
 
-    def plot_cost(self):
-        import matplotlib.pyplot as plt
-        plt.plot(np.arange(len(self.cost_his)), self.cost_his)
-        plt.ylabel('Cost')
-        plt.xlabel('training steps')
-        plt.show()
-        plt.savefig('/rwthfs/rz/cluster/home/vv465559/cui/cost.png')
+#    def plot_cost(self):
+#        import matplotlib.pyplot as plt
+#        plt.plot(np.arange(len(self.cost_his)), self.cost_his)
+#       plt.ylabel('Cost')
+#        plt.xlabel('training steps')
+#        plt.show()
+#        plt.savefig('/rwthfs/rz/cluster/home/vv465559/cui/cost.png')
 	
-
+    def cost(self):
+	    for i in range(len(self.cost_his))
+		    self.cost_total = self.cost_total + self.cost_his[i]
+			
+	    return self.cost_total
+	
     def save(self):
         saver = tf.train.Saver()
         save_path = saver.save(self.sess, '/rwthfs/rz/cluster/home/vv465559/cui/trained_model.ckpt')
