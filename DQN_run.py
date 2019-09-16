@@ -40,13 +40,13 @@ if __name__ == "__main__":
     #voltage = data['BATT_V_TOTAL'][1:86378:100]
     #speed_init = data['VEH_SPEED'][1:43189:50]
     # power = []
-    data = loadmat('/home/cuihan/PycharmProjects/masterthesisproject/testdata/driving_cycle/wltp2.mat')
+    data = loadmat('/rwthfs/rz/cluster/home/vv465559/cui/testdata/driving_cycle/wltp2.mat')
     power_init = data['P_DCL_Fahrzeug']['P_custom_wltp_1s']
     speed_init = data['P_DCL_Fahrzeug']['v_custom_wltp_1s']
     power = []
     for i in range(len(power_init)):
         #power.append([i+1, -current[i]*voltage[i]])
-        power.append([i, power_init[i][0]])
+        power.append([i, -power_init[i][0]])
 
     #######data_pd = pd.DataFrame(power).to_numpy()
     data_pd = power

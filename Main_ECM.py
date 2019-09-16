@@ -26,10 +26,10 @@ class Env_battery:
         self.HP_battery = ECM_HP([0,0])
         #print("initialHP", self.HP_current_vector)
         self.HE_cell_series =119 #92
-        self.HE_cell_parallel = 26 #14
+        self.HE_cell_parallel = 35 #14
         self.HE_cell_num = self.HE_cell_series * self.HE_cell_parallel 
         self.HP_cell_series = 150 #122
-        self.HP_cell_parallel = 1 #17
+        self.HP_cell_parallel = 20 #17
         self.HP_cell_num = self.HP_cell_series * self.HP_cell_parallel 
         self.Speed_vector = Speed_vector
 		
@@ -74,12 +74,12 @@ class Env_battery:
         print(next_state)
 
 
-        if next_state[0] <= 0.1 or next_state[0] >= 0.9 or next_state[1] <= 0.1 or next_state[1] >= 0.9:  # HE battery soc = 0 or HP battery soc = 0
+        if next_state[0] <= 0.1 or next_state[0] >= 0.9 or next_state[1] <= 0.2 or next_state[1] >= 0.8:  # HE battery soc = 0 or HP battery soc = 0
             reward_function = -1000
 
         else:
 
-            reward_function = - (HE_current[-1][1]**2 *self.HE_battery.R0 + HE_v1**2/self.HE_battery.R1 + HE_v2**2/self.HE_battery.R2  + HP_current[-1][1]**2 *self.HP_battery.R0+ HP_v1**2/self.HP_battery.R1 + HP_v2**2/self.HP_battery.R2 + 10*(HP_soc[-1][1]-0.5)**2)
+            reward_function = - (HE_current[-1][1]**2 *self.HE_battery.R0 + HE_v1**2/self.HE_battery.R1 + HE_v2**2/self.HE_battery.R2  + HP_current[-1][1]**2 *self.HP_battery.R0+ HP_v1**2/self.HP_battery.R1 + HP_v2**2/self.HP_battery.R2 + 5*(HP_soc[-1][1]-0.5)**2)
 
 
         return next_state, reward_function, self.HE_power_vector, self.HP_power_vector

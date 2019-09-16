@@ -65,8 +65,10 @@ class DeepQNetwork:
         with tf.variable_scope('eval_net', reuse = tf.AUTO_REUSE):
             e1 = tf.layers.dense(inputs = self.s, units =50, activation = tf.nn.relu, kernel_initializer=w_initializer,
                                  bias_initializer=b_initializer, name='e1')
-            e2 = tf.layers.dense(inputs = e1, units = 20, activation = tf.nn.relu, kernel_initializer=w_initializer,
+            e2 = tf.layers.dense(inputs = e1, units = 40, activation = tf.nn.relu, kernel_initializer=w_initializer,
                                           bias_initializer=b_initializer, name='e2')
+            e3 = tf.layers.dense(inputs = e1, units = 25, activation = tf.nn.relu, kernel_initializer=w_initializer,
+                                          bias_initializer=b_initializer, name='e3')
             self.q_eval = tf.layers.dense(inputs = e2, units = self.n_actions, kernel_initializer=w_initializer,
                                           bias_initializer=b_initializer, name='q')
 
@@ -74,8 +76,10 @@ class DeepQNetwork:
         with tf.variable_scope('target_net',reuse = tf.AUTO_REUSE):
             t1 = tf.layers.dense(inputs = self.s_, units = 50, activation = tf.nn.relu, kernel_initializer=w_initializer,
                                  bias_initializer=b_initializer, name='t1')
-            t2 = tf.layers.dense(inputs = t1, units = 20, activation = tf.nn.relu, kernel_initializer=w_initializer,
+            t2 = tf.layers.dense(inputs = t1, units = 40, activation = tf.nn.relu, kernel_initializer=w_initializer,
                                  bias_initializer=b_initializer, name='t2')
+            t3 = tf.layers.dense(inputs = e1, units = 25, activation = tf.nn.relu, kernel_initializer=w_initializer,
+                                          bias_initializer=b_initializer, name='t3')
             self.q_next = tf.layers.dense(inputs = t2, units = self.n_actions, kernel_initializer=w_initializer,
                                           bias_initializer=b_initializer, name='q2')
 
@@ -149,12 +153,12 @@ class DeepQNetwork:
         plt.ylabel('Cost')
         plt.xlabel('training steps')
         plt.show()
-        plt.savefig('/home/cuihan/PycharmProjects/masterthesisproject/testdata/cost.png')
+        plt.savefig('/rwthfs/rz/cluster/home/vv465559/cui/cost.png')
 	
 
     def save(self):
         saver = tf.train.Saver()
-        save_path = saver.save(self.sess, '/home/cuihan/PycharmProjects/masterthesisproject/testdata/trained_model.ckpt')
+        save_path = saver.save(self.sess, '/rwthfs/rz/cluster/home/vv465559/cui/trained_model.ckpt')
 		
 if __name__ == '__main__':
     DQN = DeepQNetwork(11, 4, output_graph=True)
