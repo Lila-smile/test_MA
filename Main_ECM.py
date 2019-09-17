@@ -34,10 +34,10 @@ class Env_battery:
         self.Speed_vector = Speed_vector
         self.HE_ratio = self.HE_cell_num / (self.HE_cell_num + self.HP_cell_num )
         self.HP_ratio = self.HP_cell_num / (self.HE_cell_num + self.HP_cell_num )
-		self.HE_P_max_dis = 200000 / self.HE_cell_num                #power limit 
-		self.HE_P_max_cha = 100000 / self.HE_cell_num
-		self.HP_P_max_dis = 200000 / self.HP_cell_num                 
-		self.HP_P_max_cha = 200000 / self.HP_cell_num
+        self.HE_P_max_dis = 200000 / self.HE_cell_num                #power limit 
+        self.HE_P_max_cha = 100000 / self.HE_cell_num
+        self.HP_P_max_dis = 200000 / self.HP_cell_num                 
+        self.HP_P_max_cha = 200000 / self.HP_cell_num
 		
 		
     def reset(self):
@@ -81,21 +81,21 @@ class Env_battery:
         
         joule_res = (HE_current[-1][1]**2 *self.HE_battery.R0 + HE_v1**2/self.HE_battery.R1 + HE_v2**2/self.HE_battery.R2)*self.HE_ratio  + (HP_current[-1][1]**2 *self.HP_battery.R0+ HP_v1**2/self.HP_battery.R1 + HP_v2**2/self.HP_battery.R2)*self.HP_ratio
         if self.HP_power > self.HP_P_max_dis or self.HP_power < self.HP_P_max_cha :  
-		    reward_function = -abs(self.HP_power)/1000 - joule_res
-		elif self.HE_power > self.HE_P_max_dis or self.HE_power < self.HE_P_max_cha: 
-		    reward_function = -abs(self.HP_power)/1000 - joule_res
-		else: 
-		     # HE battery soc = 0 or HP battery soc = 0
+                reward_function = -abs(self.HP_power)/1000 - joule_res
+        elif self.HE_power > self.HE_P_max_dis or self.HE_power < self.HE_P_max_cha: 
+            reward_function = -abs(self.HP_power)/1000 - joule_res
+        else: 
+             # HE battery soc = 0 or HP battery soc = 0
             if next_state[0] <= 0.1 :
-			    reward_function = -(next_state[0]-0.1)**2*100 - joule_res 
+                reward_function = -(next_state[0]-0.1)**2*100 - joule_res 
             elif next_state[0] >= 0.9 : 
-			    reward_function = -(next_state[0]-0.9)**2*100 - joule_res 
-		    elif next_state[1] <= 0.2 : 
-			    reward_function = -(next_state[1]-0.2)**2*100 - joule_res 
-			else : 
-			    reward_function = -(next_state[1]-0.8)**2*100 - joule_res 
-        else:
-            reward_function = - (joule_res) 
+                reward_function = -(next_state[0]-0.9)**2*100 - joule_res 
+            elif next_state[1] <= 0.2 : 
+                reward_function = -(next_state[1]-0.2)**2*100 - joule_res 
+            else next_state[1] >= 0.8 : 
+                reward_function = -(next_state[1]-0.8)**2*100 - joule_res 
+            else:
+                reward_function = - (joule_res) 
             
 
         return next_state, reward_function, self.HE_power_vector, self.HP_power_vector
