@@ -9,7 +9,7 @@ import pandas as pd
 
 class Env_battery:
 
-    def __init__(self, Power_total, HE_power_vector, HP_power_vector, Speed_vector ):  ####### self.Current_total is log data or reults from EV model
+    def __init__(self, Power_total, HE_power_vector, HP_power_vector, HEcur, HPcur, Speed_vector ):  ####### self.Current_total is log data or reults from EV model
         self.action_space = ['0', '0.1', '0.2', '0.3', '0.4', '0.5', '0.6', '0.7', '0.8', '0.9', '1.0']   #delete the comma in the end 
         self.n_actions = len(self.action_space)
         self.n_states = 4
@@ -34,11 +34,13 @@ class Env_battery:
         self.Speed_vector = Speed_vector
         self.HE_ratio = self.HE_cell_num / (self.HE_cell_num + self.HP_cell_num )
         self.HP_ratio = self.HP_cell_num / (self.HE_cell_num + self.HP_cell_num )
-        self.HE_P_max_dis = 200000 / self.HE_cell_num                #power limit 
-        self.HE_P_max_cha = 100000 / self.HE_cell_num
-        self.HP_P_max_dis = 200000 / self.HP_cell_num                 
-        self.HP_P_max_cha = 200000 / self.HP_cell_num
-		
+        self.HE_P_max_dis = 200000                 #power limit
+        self.HE_P_max_cha = 100000
+        self.HP_P_max_dis = 200000
+        self.HP_P_max_cha = 200000
+        self.HE_current = HEcur
+        self.HP_current = HPcur
+
 		
     def reset(self):
         self.HE_power_vector = []
@@ -50,8 +52,9 @@ class Env_battery:
 
     def step(self, action, num):
         #power distribution
-        self.HP_power = self.Power_total[num][1] * action * 0.1
-        self.HE_power = self.Power_total[num][1] - self.HP_power
+        #print('num',num)
+        self.HE_power = self.Power_total[num][1] * action * 0.1
+        self.HP_power = self.Power_total[num][1] - self.HE_power
         # former currrent distribution
         #self.HE_current = self.Current_total[num][1] * action * 0.1
         #self.HP_current = self.Current_total[num][1] - self.HE_current
@@ -67,19 +70,25 @@ class Env_battery:
         #self.HP_current_vector.append([num , HP_cur])
         self.HE_battery = ECM_HE(self.HE_power_vector)
         self.HP_battery = ECM_HP(self.HP_power_vector)
+        HE_current = self.HE_battery.cur_dert(num)
+        HP_current = self.HP_battery.cur_dert(num)
+        self.HE_current.append([num, HE_current])
+        self.HP_current.append([num, HP_current])
+        #print(HE_current)
+        #print(self.HE_current,'self')
+        for n in range(len(self.Power_total)):
+            #print(len(self.Power_total),'length')
+            #HE_current = self.HE_battery.cur_dert(n)
+            #HP_current = self.HP_battery.cur_dert(n)
+            HE_terminal_volt, HE_soc, HE_v1, HE_v2 = self.HE_battery.twoRCECM(n,self.HE_current)
 
-        for n in range(len(self.HE_power_vector)):
-            HE_current = self.HE_battery.cur_dert(n)
-            HP_current = self.HP_battery.cur_dert(n)
-            HE_terminal_volt, HE_soc, HE_v1, HE_v2 = self.HE_battery.twoRCECM(n,HE_current)
-            HP_terminal_volt, HP_soc, HP_v1, HP_v2 = self.HP_battery.twoRCECM(n,HP_current)
+            HP_terminal_volt, HP_soc, HP_v1, HP_v2 = self.HP_battery.twoRCECM(n,self.HP_current)
         Speed_norm = self.Speed_vector[num]/300     #nomalize of speed and power 
         Power_norm =self.Power_total[num][1]/45000
         next_state = np.array([HE_soc[-1][1], HP_soc[-1][1], Speed_norm, Power_norm])
         #next_state = np.array([HE_soc[-1][1], HP_soc[-1][1]])
         print(next_state)
-        
-        joule_res = (HE_current[-1][1]**2 *self.HE_battery.R0 + HE_v1**2/self.HE_battery.R1 + HE_v2**2/self.HE_battery.R2)*self.HE_ratio  + (HP_current[-1][1]**2 *self.HP_battery.R0+ HP_v1**2/self.HP_battery.R1 + HP_v2**2/self.HP_battery.R2)*self.HP_ratio
+        joule_res = (self.HE_current[-1][1]**2 *self.HE_battery.R0 + HE_v1**2/self.HE_battery.R1 + HE_v2**2/self.HE_battery.R2)*self.HE_ratio  + (self.HP_current[-1][1]**2 *self.HP_battery.R0+ HP_v1**2/self.HP_battery.R1 + HP_v2**2/self.HP_battery.R2)*self.HP_ratio
         if self.HP_power > self.HP_P_max_dis or self.HP_power < self.HP_P_max_cha :  
                 reward_function = -abs(self.HP_power)/1000 - joule_res
         elif self.HE_power > self.HE_P_max_dis or self.HE_power < self.HE_P_max_cha: 
@@ -92,13 +101,13 @@ class Env_battery:
                 reward_function = -(next_state[0]-0.9)**2*100 - joule_res 
             elif next_state[1] <= 0.2 : 
                 reward_function = -(next_state[1]-0.2)**2*100 - joule_res 
-            else next_state[1] >= 0.8 : 
+            elif next_state[1] >= 0.8 :
                 reward_function = -(next_state[1]-0.8)**2*100 - joule_res 
             else:
                 reward_function = - (joule_res) 
             
 
-        return next_state, reward_function, self.HE_power_vector, self.HP_power_vector
+        return next_state, reward_function, self.HE_power_vector, self.HP_power_vector, self.HE_current, self.HP_current
         #return next_state, reward_function
 
 

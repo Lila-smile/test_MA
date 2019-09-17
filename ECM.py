@@ -125,12 +125,10 @@ class Battery_ECM:
         c = -self.P[-1][1]
         #print(pow(b,2) - 4 * a * c)
         cur =-(-b + np.sqrt(pow(b, 2) - 4*a*c)) / (2*a)
-
-
         #cur_inter = math.sqrt((self.OCV[-1][1] + self.V1[-1][1] + self.V2[-1][1]) ** 2 + 4 * self.R0 * self.P[-1][1])
         #cur = (-(self.OCV[-1][1] + self.V1[-1][1] + self.V2[-1][1]) + math.sqrt((self.OCV[-1][1] + self.V1[-1][1] + self.V2[-1][1]) ** 2 + 4 * self.R0 * self.P[-1][1])) / (2 * self.R0)
-        self.I.append([num, cur])
-        return self.I
+        #self.I.append([num, cur])
+        return cur
 
     def twoRCECM(self, num, current):
         # self.SOC = self.SOC_upd(num)
