@@ -22,7 +22,7 @@ class Battery_ECM:
         self.V10 = v10
         self.V20 = v20
         #predifined parameter
-        self.Cap = 11448                                              # unit:As
+        self.Cap = 17280                                              # unit:As
 
         #ECM elements parameter
         self.R0 = 8.2733e-2
@@ -35,7 +35,7 @@ class Battery_ECM:
         self.V2 = []
         self.V2.append([0, self.V20])
         self.OCV = []
-        self.OCV.append([0, 4.2])
+        self.OCV.append([0, 3.6])
         self.etha = 0.99
         # self.OCV.append([0, 4.5])            # initial value for OCV
         self.SOC = []
@@ -124,7 +124,7 @@ class Battery_ECM:
         b = self.OCV[-1][1] + self.V1[-1][1] + self.V2[-1][1]
         c = -self.P[-1][1]
         #print(pow(b,2) - 4 * a * c)
-        cur =(-b + np.sqrt(pow(b, 2) - 4*a*c)) / (2*a)
+        cur =-(-b + np.sqrt(pow(b, 2) - 4*a*c)) / (2*a)
 
 
         #cur_inter = math.sqrt((self.OCV[-1][1] + self.V1[-1][1] + self.V2[-1][1]) ** 2 + 4 * self.R0 * self.P[-1][1])

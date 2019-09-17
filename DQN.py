@@ -8,13 +8,13 @@ class DeepQNetwork:
             self,
             n_actions,
             n_features,
-            learning_rate=0.01,
-            reward_decay=0.9,
-            e_greedy=0.9,
-            replace_target_iter=300,
-            memory_size=500,
+            learning_rate=0.00025,
+            reward_decay=0.99,
+            e_greedy=1,
+            replace_target_iter=200,
+            memory_size=1000,
             batch_size=32,
-            e_greedy_increment=None,
+            e_greedy_increment=-0.01,
             output_graph=False,
     ):
         self.n_actions = n_actions
@@ -26,7 +26,7 @@ class DeepQNetwork:
         self.memory_size = memory_size
         self.batch_size = batch_size
         self.epsilon_increment = e_greedy_increment
-        self.epsilon = 0 if e_greedy_increment is not None else self.epsilon_max
+        self.epsilon = self.epsilon_max #if e_greedy_increment is not None else self.epsilon_max
 
         # total learning step
         self.learn_step_counter = 0
@@ -50,10 +50,10 @@ class DeepQNetwork:
             tf.summary.FileWriter("logs/", self.sess.graph)
 
         self.sess.run(tf.global_variables_initializer())
-        self.cost_his = []
+        #self.cost_his = []
         # total cost and reward:
         self.cost_total = 0
-        self.reward_total = 0
+        
 
     def _build_net(self):
         # ------------------ all inputs ------------------------
@@ -66,24 +66,24 @@ class DeepQNetwork:
 
         # ------------------ build evaluate_net ------------------
         with tf.variable_scope('eval_net', reuse = tf.AUTO_REUSE):
-            e1 = tf.layers.dense(inputs = self.s, units =50, activation = tf.nn.relu, kernel_initializer=w_initializer,
+            e1 = tf.layers.dense(inputs = self.s, units =100, activation = tf.nn.relu, kernel_initializer=w_initializer,
                                  bias_initializer=b_initializer, name='e1')
-            e2 = tf.layers.dense(inputs = e1, units = 40, activation = tf.nn.relu, kernel_initializer=w_initializer,
+            e2 = tf.layers.dense(inputs = e1, units = 50, activation = tf.nn.relu, kernel_initializer=w_initializer,
                                           bias_initializer=b_initializer, name='e2')
-            e3 = tf.layers.dense(inputs = e1, units = 25, activation = tf.nn.relu, kernel_initializer=w_initializer,
+            e3 = tf.layers.dense(inputs = e2, units = 25, activation = tf.nn.relu, kernel_initializer=w_initializer,
                                           bias_initializer=b_initializer, name='e3')
-            self.q_eval = tf.layers.dense(inputs = e2, units = self.n_actions, kernel_initializer=w_initializer,
+            self.q_eval = tf.layers.dense(inputs = e3, units = self.n_actions, kernel_initializer=w_initializer,
                                           bias_initializer=b_initializer, name='q')
 
         # ------------------ build target_net ------------------
         with tf.variable_scope('target_net',reuse = tf.AUTO_REUSE):
-            t1 = tf.layers.dense(inputs = self.s_, units = 50, activation = tf.nn.relu, kernel_initializer=w_initializer,
+            t1 = tf.layers.dense(inputs = self.s_, units = 100, activation = tf.nn.relu, kernel_initializer=w_initializer,
                                  bias_initializer=b_initializer, name='t1')
-            t2 = tf.layers.dense(inputs = t1, units = 40, activation = tf.nn.relu, kernel_initializer=w_initializer,
+            t2 = tf.layers.dense(inputs = t1, units = 50, activation = tf.nn.relu, kernel_initializer=w_initializer,
                                  bias_initializer=b_initializer, name='t2')
-            t3 = tf.layers.dense(inputs = e1, units = 25, activation = tf.nn.relu, kernel_initializer=w_initializer,
+            t3 = tf.layers.dense(inputs = t2, units = 25, activation = tf.nn.relu, kernel_initializer=w_initializer,
                                           bias_initializer=b_initializer, name='t3')
-            self.q_next = tf.layers.dense(inputs = t2, units = self.n_actions, kernel_initializer=w_initializer,
+            self.q_next = tf.layers.dense(inputs = t3, units = self.n_actions, kernel_initializer=w_initializer,
                                           bias_initializer=b_initializer, name='q2')
 
         with tf.variable_scope('q_target',reuse = tf.AUTO_REUSE):
@@ -114,12 +114,14 @@ class DeepQNetwork:
         #observation = observation
         if np.random.uniform() < self.epsilon:
             #print("1st loop")
+            
+            action = np.random.randint(0, self.n_actions)
+        else:
+            #print("2nd loop")
             # forward feed the observation and get q value for every actions
             actions_value = self.sess.run(self.q_eval, feed_dict={self.s: observation})
             action = np.argmax(actions_value)
-        else:
-            #print("2nd loop")
-            action = np.random.randint(0, self.n_actions)
+            
         return action
 
     def learn(self):
@@ -144,12 +146,12 @@ class DeepQNetwork:
                 self.s_: batch_memory[:, -self.n_features:],
             })
 
-        self.cost_his.append(cost)
+        #self.cost_his.append(cost)
 		
         # increasing epsilon
-        self.epsilon = self.epsilon + self.epsilon_increment if self.epsilon < self.epsilon_max else self.epsilon_max
+        self.epsilon = self.epsilon + self.epsilon_increment if 0.2 < self.epsilon < self.epsilon_max else 0.2
         self.learn_step_counter += 1
-
+        return cost
 #    def plot_cost(self):
 #        import matplotlib.pyplot as plt
 #        plt.plot(np.arange(len(self.cost_his)), self.cost_his)
@@ -158,10 +160,10 @@ class DeepQNetwork:
 #        plt.show()
 #        plt.savefig('/rwthfs/rz/cluster/home/vv465559/cui/cost.png')
 	
-    def cost(self):
-        for i in range(len(self.cost_his)):
-            self.cost_total = self.cost_total + self.cost_his[i]
-        return self.cost_total
+    #def cost(self):
+        #for i in range(len(self.cost_his)):
+            #self.cost_total = self.cost_total + self.cost_his[i]
+        #return self.cost_total
 	
     def save(self):
         saver = tf.train.Saver()

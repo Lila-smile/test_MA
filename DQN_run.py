@@ -46,14 +46,14 @@ if __name__ == "__main__":
     power = []
     for i in range(len(power_init)):
         #power.append([i+1, -current[i]*voltage[i]])
-        power.append([i, -power_init[i][0]])
+        power.append([i, power_init[i][0]])
 
     #######data_pd = pd.DataFrame(power).to_numpy()
     data_pd = power
     final_data = []
     speed = []
-    cost = []
-    reward_total = 0
+    cost_final= []
+    #reward_total = 0
     reward_final = [] #each indicate total reward in one epoch
     for i in range(2):
         for n in range(len(data_pd)):
@@ -61,14 +61,18 @@ if __name__ == "__main__":
             #speed.append(speed_init[n])
             speed.append(speed_init[n][0])
     Env_battery_update = Env_battery([[0, 0]], [[0, 0]], [[0, 0]],[[0, 0]])
-    RL = DeepQNetwork(Env_battery_update.n_actions, Env_battery_update.n_states, learning_rate=0.01, reward_decay=0.9, e_greedy=0.9, replace_target_iter=200, memory_size=2000)
+    RL = DeepQNetwork(Env_battery_update.n_actions, Env_battery_update.n_states, learning_rate=0.00025, reward_decay=0.99, e_greedy=1, replace_target_iter=200, memory_size=1000)
     for episode in range(50):
         HE_power_vector = [[0, 0]]
         HP_power_vector = [[0, 0]]
+        cost_total = 0
+        reward_total = 0
         #observation = Env_battery([[0, 0]]).reset()
         for time in range(len(final_data)):
             if time == 0:
                 observation = Env_battery([[0, 0]], [[0, 0]], [[0, 0]],[[0, 0]]).reset()
+                HE_soc = []
+                HP_soc = []
             else:
                 print(time)
                 Env_battery_update = Env_battery(final_data[0:time+1], HE_power_vector , HP_power_vector, speed[0:time + 1])
@@ -82,27 +86,40 @@ if __name__ == "__main__":
                 
                 RL.store_transition(observation, action, reward, observation_)
                 
-                RL.learn()
-                
+                cost = RL.learn()
+                cost_total = cost_total + cost
                 # swap observation
                 observation = observation_
-                
+                HE_soc.append(observation[0]) 
+                HP_soc.append(observation[1])
                 # break while loop when end of this episode
     # Env_battery.mainloop()
         #RL.plot_cost() 
-        cost.append(RL.cost())
+        cost_final.append(cost_total)
         reward_final.append(reward_total)
 		
-    plt.plot(np.arange(len(cost)),cost)
+    plt.plot(np.arange(len(cost_final)),cost_final)
     plt.ylabel('Cost')
     plt.xlabel('Epoch ')
     plt.show()
     plt.savefig('/rwthfs/rz/cluster/home/vv465559/cui/cost_total.png')
+    plt.clf()
+    
     plt.plot(np.arange(len(reward_final)),reward_final)
     plt.ylabel('Reward')
     plt.xlabel('Epoch ')
     plt.show()
     plt.savefig('/rwthfs/rz/cluster/home/vv465559/cui/reward_total.png')
+    plt.clf()
+    
+    plt.plot(np.arange(len(HE_soc)),HE_soc)
+    plt.plot(np.arange(len(HE_soc)),HP_soc)
+    plt.ylabel('SOC')
+    plt.xlabel('time')
+    plt.legend(['HE_SOC', 'HP_SOC'], loc='upper left')
+    plt.show()
+    plt.savefig('/rwthfs/rz/cluster/home/vv465559/cui/SOC.png')
+    plt.clf()
     RL.save()
 
 
