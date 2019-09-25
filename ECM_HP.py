@@ -57,12 +57,12 @@ class Battery_ECM:
         self.Xk.append([0, self.X0])
         # self.Xk = np.array(self.Xk)
         # OCV-SOC nonlinearity parameter
-        self.K0 = 2.644
-        self.K1 = 0.02673
-        self.K2 = -0.3406e-3
-        self.K3 = 1.848e-6
-        self.K4 = 3.706e-2
-        self.K5 = -0.2242
+        self.K0 = 2.283
+        self.K1 = 0.007823
+        self.K2 = -0.0001249
+        self.K3 = 9.03e-7
+        self.K4 = 0.0005537
+        #self.K5 = -0.2242
 
         ###############parameter for thermal model###########
         self.V_avg = []
@@ -91,7 +91,7 @@ class Battery_ECM:
 
     def ocv_upd(self, num):
         OCV_cur = self.K0 + self.K1 * self.SOC[num][1] + self.K2 * np.power(self.SOC[num][1], 2) + self.K3 * np.power(
-            self.SOC[num][1], 3) + self.K4 / self.SOC[num][1] + self.K5 * np.log(self.SOC[num][1])
+            self.SOC[num][1], 3) + self.K4 / self.SOC[num][1] #+ self.K5 * np.log(self.SOC[num][1])
         return OCV_cur
 
     def r0_udp(self):

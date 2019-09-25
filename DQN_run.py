@@ -40,7 +40,7 @@ if __name__ == "__main__":
     #voltage = data['BATT_V_TOTAL'][1:86378:100]
     #speed_init = data['VEH_SPEED'][1:43189:50]
     # power = []
-    data = loadmat('/home/cuihan/PycharmProjects/masterthesisproject/testdata/driving_cycle/wltp2.mat')
+    data = loadmat('/rwthfs/rz/cluster/home/vv465559/cui/testdata/driving_cycle/wltp2.mat')
     power_init = data['P_DCL_Fahrzeug']['P_custom_wltp_1s']
     speed_init = data['P_DCL_Fahrzeug']['v_custom_wltp_1s']
     power = []
@@ -55,14 +55,14 @@ if __name__ == "__main__":
     cost_final= []
     #reward_total = 0
     reward_final = [] #each indicate total reward in one epoch
-    for i in range(2):
+    for i in range(4):
         for n in range(len(data_pd)):
             final_data.append([n+i*len(data_pd), data_pd[n][1]])  # n start with 0, 17 same trips
             #speed.append(speed_init[n])
             speed.append(speed_init[n][0])
     Env_battery_update = Env_battery([[0, 0]], [[0, 0]], [[0, 0]],[],[],[[0, 0]])
     RL = DeepQNetwork(Env_battery_update.n_actions, Env_battery_update.n_states, learning_rate=0.00025, reward_decay=0.99, e_greedy=1, replace_target_iter=200, memory_size=1000)
-    for episode in range(50):
+    for episode in range(100):
         HP_power_vector = [[0, 0]]
         HE_power_vector = [[0, final_data[0][1]]]
         HEcur = []
@@ -83,7 +83,7 @@ if __name__ == "__main__":
 
                 # RL take action and get next observation and reward
                 observation_, reward, HE_power_vector, HP_power_vector, HEcur, HPcur = Env_battery_update.step(action, time-1)  #####time stamp of action
-                #print("reward", reward)
+                print("reward", reward)
                 reward_total = reward_total + reward
                 
                 RL.store_transition(observation, action, reward, observation_)
@@ -100,28 +100,28 @@ if __name__ == "__main__":
         cost_final.append(cost_total)
         reward_final.append(reward_total)
 		
-    # plt.plot(np.arange(len(cost_final)),cost_final)
-    # plt.ylabel('Cost')
-    # plt.xlabel('Epoch ')
-    # plt.show()
-    # plt.savefig('/rwthfs/rz/cluster/home/vv465559/cui/cost_total.png')
-    # plt.clf()
-    #
-    # plt.plot(np.arange(len(reward_final)),reward_final)
-    # plt.ylabel('Reward')
-    # plt.xlabel('Epoch ')
-    # plt.show()
-    # plt.savefig('/rwthfs/rz/cluster/home/vv465559/cui/reward_total.png')
-    # plt.clf()
-    #
-    # plt.plot(np.arange(len(HE_soc)),HE_soc)
-    # plt.plot(np.arange(len(HE_soc)),HP_soc)
-    # plt.ylabel('SOC')
-    # plt.xlabel('time')
-    # plt.legend(['HE_SOC', 'HP_SOC'], loc='upper left')
-    # plt.show()
-    # plt.savefig('/rwthfs/rz/cluster/home/vv465559/cui/SOC.png')
-    # plt.clf()
-    # RL.save()
+    plt.plot(np.arange(len(cost_final)),cost_final)
+    plt.ylabel('Cost')
+    plt.xlabel('Epoch ')
+    plt.show()
+    plt.savefig('/rwthfs/rz/cluster/home/vv465559/cui/cost_total.png')
+    plt.clf()
+    
+    plt.plot(np.arange(len(reward_final)),reward_final)
+    plt.ylabel('Reward')
+    plt.xlabel('Epoch ')
+    plt.show()
+    plt.savefig('/rwthfs/rz/cluster/home/vv465559/cui/reward_total.png')
+    plt.clf()
+    
+    plt.plot(np.arange(len(HE_soc)),HE_soc)
+    plt.plot(np.arange(len(HE_soc)),HP_soc)
+    plt.ylabel('SOC')
+    plt.xlabel('time')
+    plt.legend(['HE_SOC', 'HP_SOC'], loc='upper left')
+    plt.show()
+    plt.savefig('/rwthfs/rz/cluster/home/vv465559/cui/SOC.png')
+    plt.clf()
+    RL.save()
 
 
